@@ -8,10 +8,8 @@ La plataforma web corporativa de gestión de inspecciones, cargue, evidencias fo
 
 | Servicio | URL | Descripción |
 | :--- | :--- | :--- |
-| **Frontend Vite (HMR)** | [http://localhost:5173](http://localhost:5173) | Interfaz React 18 + Tailwind CSS + Lucide Icons con recarga en caliente |
-| **Plataforma Unificada (Fullstack)** | [http://localhost:4000](http://localhost:4000) | Aplicación completa servida por el backend Express + SQLite |
-| **API REST & Endpoints** | [http://localhost:4000/api](http://localhost:4000/api) | Rutas autenticadas con JWT y RBAC estricto |
-| **Storage de Evidencias y PDFs** | [http://localhost:4000/uploads](http://localhost:4000/uploads) | Archivos organizados por empresa, inspección e informes |
+| **Plataforma Unificada Única (Localhost)** | [http://localhost:4000](http://localhost:4000) | **Un solo localhost** para la aplicación web completa, API REST y reportes |
+| **Repositorio GitHub Conectado** | [https://github.com/banqi-lgtm/china](https://github.com/banqi-lgtm/china) | Repositorio oficial conectado y sincronizado con la rama `main` |
 
 ---
 
