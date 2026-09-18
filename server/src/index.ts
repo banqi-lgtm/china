@@ -47,14 +47,17 @@ app.get('/api/health', (req, res) => {
 });
 
 // Serve frontend build if present
+const rootDist = path.resolve(__dirname, '../../dist');
 const clientDist = path.resolve(__dirname, '../../client/dist');
-if (fs.existsSync(clientDist)) {
-  app.use(express.static(clientDist));
+const distPath = fs.existsSync(rootDist) ? rootDist : (fs.existsSync(clientDist) ? clientDist : null);
+
+if (distPath) {
+  app.use(express.static(distPath));
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
       return next();
     }
-    res.sendFile(path.join(clientDist, 'index.html'));
+    res.sendFile(path.join(distPath, 'index.html'));
   });
 }
 

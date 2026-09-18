@@ -45,14 +45,16 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', service: 'InspectionPro SaaS API', timestamp: new Date().toISOString() });
 });
 // Serve frontend build if present
+const rootDist = path_1.default.resolve(__dirname, '../../dist');
 const clientDist = path_1.default.resolve(__dirname, '../../client/dist');
-if (fs_1.default.existsSync(clientDist)) {
-    app.use(express_1.default.static(clientDist));
+const distPath = fs_1.default.existsSync(rootDist) ? rootDist : (fs_1.default.existsSync(clientDist) ? clientDist : null);
+if (distPath) {
+    app.use(express_1.default.static(distPath));
     app.get('*', (req, res, next) => {
         if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
             return next();
         }
-        res.sendFile(path_1.default.join(clientDist, 'index.html'));
+        res.sendFile(path_1.default.join(distPath, 'index.html'));
     });
 }
 async function startServer() {
