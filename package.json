@@ -1,0 +1,17 @@
+{
+  "name": "china-inspection-saas",
+  "version": "1.0.0",
+  "description": "Enterprise Inspection & Loading Management SaaS Platform",
+  "scripts": {
+    "start": "cd server && npx tsx src/index.ts",
+    "dev": "cd client && npm run build && cd ../server && npx tsx src/index.ts",
+    "build:client": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    "build": "npm run build:client && npm run build:server",
+    "seed": "cd server && npm run seed"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/banqi-lgtm/china.git"
+  }
+}

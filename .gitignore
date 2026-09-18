@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Production builds (optional if building on deploy, but let's keep client/dist if wanted or build during start)
+.env
+.env.local
+*.log
+npm-debug.log*
+
+# Database & temporary test files
+server/*.sqlite
+server/*.sqlite-journal
+
+# Uploaded dynamic user reports
+uploads/reports/*.pdf
+uploads/companies/*/*/*/
+
+# OS files
+.DS_Store
+Thumbs.db
