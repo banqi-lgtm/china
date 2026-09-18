@@ -135,6 +135,11 @@ router.get('/:id', authenticate, async (req: Request, res: Response) => {
       [id]
     );
 
+    const report = await db.get<any>(
+      'SELECT * FROM reports WHERE inspection_id = ? ORDER BY generated_at DESC LIMIT 1',
+      [id]
+    );
+
     return res.json({
       inspection,
       container,
@@ -146,7 +151,8 @@ router.get('/:id', authenticate, async (req: Request, res: Response) => {
       findings,
       evidences,
       signatures,
-      timeline
+      timeline,
+      report
     });
   } catch (err: any) {
     console.error('Error getting inspection detail:', err);

@@ -48,6 +48,9 @@ export const InspectionDetailPage: React.FC<InspectionDetailPageProps> = ({
       setLoading(true);
       const res = await api.get(`/inspections/${inspectionId}`);
       setData(res);
+      if (res.report?.pdf_path) {
+        setPdfResult(res.report.pdf_path);
+      }
     } catch (err: any) {
       alert(err.message || 'Error al cargar detalles de la inspección');
     } finally {

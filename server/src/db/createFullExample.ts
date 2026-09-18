@@ -1,21 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
-import fs from 'fs';
-import path from 'path';
 import { db, initDatabase } from './database';
-import { UPLOAD_DIR } from '../config';
 import { generateInspectionPDF } from '../services/pdfGenerator.service';
-
-// Ultra-realistic PNG graphic for photographic evidence
-const samplePngBase64 = 
-  'iVBORw0KGgoAAAANSUhEUgAAAlgAAAGQCAYAAAByNR6YAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAA' +
-  'EnQAABJ0Ad5mPtUAABBTSURBVHhe7d0xihxJFoDh/x/am1uwt2Av1o0E74bZG8jeyHsj6A1gb4BwE3oz3pvhN4G7wBuwb8DO' +
-  'YF2fWVEZWRlZlVnp/r7nAT05lZVZ8edHZERmRj7956effgMAAIA/vHn706fffv0rAAAAvHnzzZ+++fM/fv2LAACANz/879e/' +
-  'f/2/rwAAAPBfX/3tN//2v/4DAADAm7/98T9//uOv/wQAAPBff/r7r//837/9MwAAALz56Z9///U///cTAAAA//iPf/35r///' +
-  'EwAAwJv/fPj627999W8AAAD446d//f7r3/8HAAAAAPj/AAAAAAD//wMAH4kXvT0rKxEAAAAASUVORK5CYII=';
 
 export async function createFullShowcaseExample() {
   await initDatabase();
-  console.log('--- Creando Ejemplo Completo de Inspección e Informe Multi-Rol ---');
+  console.log('--- Creando Ejemplo Completo de Inspección e Informe Multi-Rol con Imágenes IA ---');
 
   const compId = 'comp-demo-1';
   const operarioId = 'usr-operario-3';
@@ -23,23 +12,7 @@ export async function createFullShowcaseExample() {
   const inspId = 'insp-full-showcase-001';
   const reportCode = 'INS-2026-000888';
 
-  // Ensure photo sample directory exists
-  const photosDir = path.join(UPLOAD_DIR, 'companies', compId, 'inspections', inspId, 'photos');
-  fs.mkdirSync(photosDir, { recursive: true });
-
-  const p1 = path.join(photosDir, '1_contenedor_exterior.png');
-  const p2 = path.join(photosDir, '2_proceso_cargue.png');
-  const p3 = path.join(photosDir, '3_inspeccion_producto.png');
-  const p4 = path.join(photosDir, '4_vehiculo_transporte.png');
-  const p5 = path.join(photosDir, '5_precinto_seguridad.png');
-
-  fs.writeFileSync(p1, Buffer.from(samplePngBase64, 'base64'));
-  fs.writeFileSync(p2, Buffer.from(samplePngBase64, 'base64'));
-  fs.writeFileSync(p3, Buffer.from(samplePngBase64, 'base64'));
-  fs.writeFileSync(p4, Buffer.from(samplePngBase64, 'base64'));
-  fs.writeFileSync(p5, Buffer.from(samplePngBase64, 'base64'));
-
-  // 1. Insert Main Inspection Record (Status: APROBADA, Result: PASS, Progress: 100%)
+  // 1. Insert Main Inspection Record
   await db.run(
     `INSERT OR REPLACE INTO inspections (
       id, code, company_id, type_id, operator_id, consultant_id, status, progress,
@@ -78,7 +51,7 @@ export async function createFullShowcaseExample() {
     ) VALUES (
       'cargo-showcase', ?, 1850, 'Cajas Paletizadas', 24100.0, 22800.0, 69.5,
       'Tarimas Europeas Tratadas NIMF-15',
-      'Embalaje con esquineros de alta resistencia, flejes de polipropileno y bolsas de aire (dunnage airbags).'
+      'Embalaje con esquineros de alta densidad, flejes de polipropileno y bolsas de aire (dunnage airbags).'
     )`,
     [inspId]
   );
@@ -121,12 +94,12 @@ export async function createFullShowcaseExample() {
     [inspId]
   );
 
-  // 7. Step 4: Checklist Answers (All categories verified)
+  // 7. Step 4: Checklist Answers (Clean structured observations)
   const questions = await db.all('SELECT id FROM checklist_questions');
   for (const q of questions) {
     await db.run(
       `INSERT OR REPLACE INTO checklist_answers (id, inspection_id, question_id, status, observations)
-       VALUES (?, ?, ?, 'OK', 'Verificado y conforme según estándar de inspección.')`,
+       VALUES (?, ?, ?, 'OK', 'Verificado y conforme.')`,
       [uuidv4(), inspId, q.id]
     );
   }
@@ -144,18 +117,19 @@ export async function createFullShowcaseExample() {
     [inspId]
   );
 
-  // 9. Evidences (Photos organized by sections)
+  // 9. Evidences (Connecting to REAL AI GENERATED IMAGES IN uploads/demo)
+  // Delete previous evidences for this inspection to start fresh
+  await db.run('DELETE FROM evidences WHERE inspection_id = ?', [inspId]);
+
   await db.run(
-    `INSERT OR REPLACE INTO evidences (
+    `INSERT INTO evidences (
       id, inspection_id, section, type, file_path, file_name, file_size, mime_type, description, is_primary, rotation, uploaded_by
     ) VALUES 
-    (?, ?, 'CONTENEDOR', 'PHOTO', 'uploads/companies/comp-demo-1/inspections/insp-full-showcase-001/photos/1_contenedor_exterior.png', 'contenedor_40hc.png', 320000, 'image/png', 'Vista exterior de 7 puntos del contenedor MSKU-994120-3', 1, 0, ?),
-    (?, ?, 'CARGUE', 'PHOTO', 'uploads/companies/comp-demo-1/inspections/insp-full-showcase-001/photos/2_proceso_cargue.png', 'estiba_y_dunnage.png', 280000, 'image/png', 'Proceso de estiba y colocación de bolsas neumáticas de bloqueo', 1, 0, ?),
-    (?, ?, 'PRODUCTO', 'PHOTO', 'uploads/companies/comp-demo-1/inspections/insp-full-showcase-001/photos/3_inspeccion_producto.png', 'rotulado_lote.png', 250000, 'image/png', 'Muestreo aleatorio de producto, embalaje y etiquetas de lote', 1, 0, ?),
-    (?, ?, 'VEHICULO', 'PHOTO', 'uploads/companies/comp-demo-1/inspections/insp-full-showcase-001/photos/4_vehiculo_transporte.png', 'cabezote_wzk410.png', 310000, 'image/png', 'Cabezote y verificación de placa WZK-410 en báscula de entrada', 1, 0, ?),
-    (?, ?, 'DOCUMENTACION', 'PHOTO', 'uploads/companies/comp-demo-1/inspections/insp-full-showcase-001/photos/5_precinto_seguridad.png', 'precinto_oficial.png', 290000, 'image/png', 'Precinto de seguridad aduanero CO-CUSTOMS-882104 debidamente trabado', 1, 0, ?)`,
+    (?, ?, 'CONTENEDOR', 'PHOTO', 'uploads/demo/1_container_exterior.jpg', '1_container_exterior.jpg', 1008020, 'image/jpeg', 'Vista exterior de 7 puntos del contenedor MSKU-994120-3 en patio de muelle', 1, 0, ?),
+    (?, ?, 'CARGUE', 'PHOTO', 'uploads/demo/2_loading_process.jpg', '2_loading_process.jpg', 982877, 'image/jpeg', 'Proceso de estiba de pallets y colocación de bolsas neumáticas dunnage', 1, 0, ?),
+    (?, ?, 'PRODUCTO', 'PHOTO', 'uploads/demo/3_product_quality.jpg', '3_product_quality.jpg', 1068834, 'image/jpeg', 'Muestreo aleatorio de producto con etiquetas QC Passed y sacos de café', 1, 0, ?),
+    (?, ?, 'DOCUMENTACION', 'PHOTO', 'uploads/demo/4_container_seal.jpg', '4_container_seal.jpg', 792666, 'image/jpeg', 'Precinto de seguridad aduanero CO-CUSTOMS-882104 trabado en manija', 1, 0, ?)`,
     [
-      uuidv4(), inspId, operarioId,
       uuidv4(), inspId, operarioId,
       uuidv4(), inspId, operarioId,
       uuidv4(), inspId, operarioId,
@@ -163,16 +137,26 @@ export async function createFullShowcaseExample() {
     ]
   );
 
-  // 10. Digital Signatures (Operario Carlos + Consultor Mateo)
+  // 10. Digital Signatures
+  // High quality sample signature
+  const sampleSignaturePng = 
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAAGQCAYAAAByNR6YAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAA' +
+    'EnQAABJ0Ad5mPtUAABBTSURBVHhe7d0xihxJFoDh/x/am1uwt2Av1o0E74bZG8jeyHsj6A1gb4BwE3oz3pvhN4G7wBuwb8DO' +
+    'YF2fWVEZWRlZlVnp/r7nAT05lZVZ8edHZERmRj7956effgMAAIA/vHn706fffv0rAAAAvHnzzZ+++fM/fv2LAACANz/879e/' +
+    'f/2/rwAAAPBfX/3tN//2v/4DAADAm7/98T9//uOv/wQAAPBff/r7r//837/9MwAAALz56Z9///U///cTAAAA//iPf/35r///' +
+    'EwAAwJv/fPj627999W8AAAD446d//f7r3/8HAAAAAPj/AAAAAAD//wMAH4kXvT0rKxEAAAAASUVORK5CYII=';
+
+  await db.run('DELETE FROM signatures WHERE inspection_id = ?', [inspId]);
   await db.run(
-    `INSERT OR REPLACE INTO signatures (id, inspection_id, signer_type, signer_name, signature_data, signed_at)
+    `INSERT INTO signatures (id, inspection_id, signer_type, signer_name, signature_data, signed_at)
      VALUES 
-     (?, ?, 'OPERATOR', 'Carlos Pérez (Operario de Calidad)', 'data:image/png;base64,${samplePngBase64}', '2026-09-18 11:00:00'),
-     (?, ?, 'CONSULTANT', 'Mateo González (Lead Quality Consultant)', 'data:image/png;base64,${samplePngBase64}', '2026-09-18 11:45:00')`,
-    [uuidv4(), inspId, uuidv4(), inspId]
+     (?, ?, 'OPERATOR', 'Carlos Pérez (Operario de Calidad)', ?, '2026-09-18 11:00:00'),
+     (?, ?, 'CONSULTANT', 'Mateo González (Lead Quality Consultant)', ?, '2026-09-18 11:45:00')`,
+    [uuidv4(), inspId, sampleSignaturePng, uuidv4(), inspId, sampleSignaturePng]
   );
 
   // 11. Complete Status Timeline
+  await db.run('DELETE FROM inspection_status_history WHERE inspection_id = ?', [inspId]);
   await db.run(
     `INSERT INTO inspection_status_history (id, inspection_id, previous_status, new_status, changed_by, comment, created_at)
      VALUES 
@@ -192,31 +176,15 @@ export async function createFullShowcaseExample() {
     ]
   );
 
-  // 12. Audit Log Records
-  await db.run(
-    `INSERT INTO audit_logs (id, user_id, user_email, role, action, ip_address, affected_table, record_id, created_at)
-     VALUES 
-     (?, ?, 'operario@inspectionpro.com', 'OPERATOR', 'INSPECTION_COMPLETED_10_STEPS', '192.168.0.8', 'inspections', ?, datetime('now', '-2 hours')),
-     (?, ?, 'mateo@inspectionpro.com', 'CONSULTANT', 'INSPECTION_TECHNICAL_APPROVAL', '192.168.0.10', 'inspections', ?, datetime('now', '-1 hour')),
-     (?, ?, 'cliente@demologistics.com', 'CLIENT', 'REPORT_DOWNLOADED', '192.168.0.25', 'reports', ?, datetime('now', '-15 minutes'))`,
-    [
-      uuidv4(), operarioId, inspId,
-      uuidv4(), mateoId, inspId,
-      uuidv4(), 'usr-cliente-4', inspId
-    ]
-  );
-
-  // 13. GENERATE THE ACTUAL OFFICIAL PDF REPORT ON DISK
-  console.log('Generando documento PDF corporativo oficial...');
+  // 12. GENERATE NEW PERFECT PDF
+  console.log('Regenerando PDF con el motor corregido e imágenes IA reales...');
   const pdfResult = await generateInspectionPDF(inspId, mateoId);
-  console.log('PDF generado exitosamente:', pdfResult);
-
-  console.log('--- Ejemplo Completo INS-2026-000888 Creado con Éxito ---');
+  console.log('PDF Generado con éxito:', pdfResult);
 }
 
 if (require.main === module) {
   createFullShowcaseExample().then(() => process.exit(0)).catch((err) => {
-    console.error('Error al crear ejemplo completo:', err);
+    console.error('Error:', err);
     process.exit(1);
   });
 }
