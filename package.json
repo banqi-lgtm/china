@@ -3,12 +3,14 @@
   "version": "1.0.0",
   "description": "Enterprise Inspection & Loading Management SaaS Platform",
   "scripts": {
-    "start": "cd server && npx tsx src/index.ts",
-    "dev": "cd client && npm run build && cd ../server && npx tsx src/index.ts",
-    "build:client": "cd client && npm run build",
-    "build:server": "cd server && npm run build",
+    "postinstall": "npm --prefix client install && npm --prefix server install",
+    "build:client": "npm --prefix client run build",
+    "build:server": "npm --prefix server run build",
     "build": "npm run build:client && npm run build:server",
-    "seed": "cd server && npm run seed"
+    "start": "node server/dist/index.js",
+    "start:dev": "cd server && npx tsx src/index.ts",
+    "dev": "cd client && npm run build && cd ../server && npx tsx src/index.ts",
+    "seed": "npm --prefix server run seed"
   },
   "repository": {
     "type": "git",

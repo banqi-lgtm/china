@@ -5,6 +5,7 @@ import fs from 'fs';
 import { PORT, UPLOAD_DIR } from './config';
 import { initDatabase } from './db/database';
 import { seedDatabase } from './db/seed';
+import { createFullShowcaseExample } from './db/createFullExample';
 
 import authRoutes from './routes/auth.routes';
 import inspectionRoutes from './routes/inspection.routes';
@@ -61,6 +62,7 @@ async function startServer() {
   try {
     await initDatabase();
     await seedDatabase();
+    await createFullShowcaseExample();
 
     app.listen(PORT, () => {
       console.log(`=======================================================`);
