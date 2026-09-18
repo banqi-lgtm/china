@@ -43,6 +43,29 @@ function handleMockRequest<T = any>(endpoint: string, options: RequestInit = {})
     } as T;
   }
 
+  // 1b. Auth: Register
+  if (endpoint.startsWith('/auth/register')) {
+    const email = (body.email || 'usuario@empresa.com').toLowerCase().trim();
+    const user = {
+      id: `usr-${Date.now()}`,
+      name: body.name || 'Usuario Registrado',
+      email,
+      role: body.role || 'CLIENT',
+      company_id: `comp-${Date.now()}`,
+      company_name: body.company_name || 'Empresa Registrada',
+      phone: body.phone || '',
+      active: 1,
+      created_at: new Date().toISOString(),
+    };
+    MOCK_USERS[email] = user;
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    return {
+      success: true,
+      token: `mock-jwt-${user.role}-${Date.now()}`,
+      user,
+    } as T;
+  }
+
   // 2. Auth: Me
   if (endpoint.startsWith('/auth/me')) {
     const stored = localStorage.getItem('currentUser');

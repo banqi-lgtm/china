@@ -1,4 +1,15 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": "./dist"
+  "outputDirectory": "./dist",
+  "cloudFunctions": {
+    "nodejs": {
+      "entry": "cloud-functions",
+      "kvNamespaces": [
+        {
+          "name": "USERS_KV",
+          "binding": "USERS_KV"
+        }
+      ]
+    }
+  }
 }
